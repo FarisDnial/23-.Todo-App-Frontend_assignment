@@ -18,7 +18,6 @@ export default function BasicExample() {
 
             <Dropdown.Menu>
                 <Dropdown.Item href="/">Home</Dropdown.Item>
-                <Dropdown.Item href="/dashboard">Dashboard</Dropdown.Item>
                 <Dropdown.Item onClick={logout}>Logout</Dropdown.Item>
             </Dropdown.Menu>
         </Dropdown>
