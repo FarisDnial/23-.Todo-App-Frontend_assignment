@@ -1,38 +1,48 @@
-import { useContext } from "react";
 import { useState } from "react";
-import { TodoContext } from "../contexts/TodoContext";
 import { useNavigate } from "react-router-dom";
 import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
+import { useDispatch, useSelector } from "react-redux";
+import { addBook } from "../feature/bookSlice";
 import '../App.css';
-import { AuthContext } from "../contexts/AuthContext";
 
 export default function AddTodo() {
+    const books = useSelector((state) => (state.book))
     const [title, setTitle] = useState("");
     const [genre, setGenre] = useState("");
     const [pages, setPages] = useState("");
     const [chapter, setChapter] = useState("");
     const [completed, setCompleted] = useState(false);
-    const setTodos = useContext(TodoContext).setTodos;
-    const todos = useContext(TodoContext).todos;
+
+    const dispatch = useDispatch();
     const navigate = useNavigate();
-    const token = useContext(AuthContext).token;
 
-
-    function addTodo(event) {
+    function addToBookList(event) {
         event.preventDefault();
-        setTodos([...todos, { id: Date.now(), title, genre, chapter, pages, completed }]);
-        console.log(token)
 
+        const newBook = {
+            id: Date.now(),
+            title,
+            genre,
+            chapter: parseInt(chapter) || 0, // Ensure it's a number
+            pages: parseInt(pages) || 0, // Ensure it's a number
+            completed,
+        };
+
+        dispatch(addBook(newBook)); // Dispatch a single book object
+        console.log(books)
+        navigate("/dashboard");
+    }
+
+    function navigatoToDashboard() {
         navigate("/dashboard")
     }
 
     return (
         <Container>
-            <Card className="mx-5 my-5">
-                <Card.Body>
-                    <h1 className="my-3">Book To Read</h1>
-                    <Form onSubmit={addTodo}>
-
+            <Card className="my-5">
+                <Card.Body className="mx-5 my-5">
+                    <h1 className="mb-5">Book To Read</h1>
+                    <Form onSubmit={addToBookList}>
                         <Row className="mb-2">
                             <Form.Group as={Col} className="mb-3" controlId="title">
                                 <Form.Label>Book Title</Form.Label>
@@ -64,7 +74,7 @@ export default function AddTodo() {
                                 <Form.Control
                                     value={chapter}
                                     onChange={(e) => setChapter(e.target.value)}
-                                    type="text"
+                                    type="number"
                                     placeholder="Chapter 4"
                                 />
                             </Form.Group>
@@ -73,11 +83,12 @@ export default function AddTodo() {
                                 <Form.Control
                                     value={pages}
                                     onChange={(e) => setPages(e.target.value)}
-                                    type="text"
-                                    placeholder="page 120"
+                                    type="number"
+                                    placeholder="Page 120"
                                 />
                             </Form.Group>
                         </Row>
+
                         <Form.Check
                             type="checkbox"
                             id="completed"
@@ -86,14 +97,15 @@ export default function AddTodo() {
                             onChange={(e) => setCompleted(e.target.checked)}
                             className="mb-3"
                         />
-                        <Button variant="outline-dark" type="submit">
+                        <Button variant="dark" className="my-2" onClick={navigatoToDashboard}>
+                            Back
+                        </Button>
+                        <Button variant="warning" type="submit" className="mx-2">
                             Submit
                         </Button>
-
                     </Form>
                 </Card.Body>
             </Card>
-
         </Container>
     );
 }

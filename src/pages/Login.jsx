@@ -4,18 +4,16 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/AuthContext";
 import "../App.css";
 
-
 export default function Login() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const navigate = useNavigate();
     const authContext = useContext(AuthContext);
 
-
     function login() {
         const isCorrectUsername1 = (username === "faris.danial@gmail.com");
         const isCorrectPassword1 = (password === "abc123");
-        const isCorrectUsername2 = (username === "faris@gmail.com");
+        const isCorrectUsername2 = (username === "user@mail.com");
         const isCorrectPassword2 = (password === "abc123");
         // if both of these are true, continue
         if (isCorrectUsername1 && isCorrectPassword1) {

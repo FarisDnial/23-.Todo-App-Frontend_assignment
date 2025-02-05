@@ -1,38 +1,70 @@
-import { useContext } from "react";
-import { useState } from "react";
-import { TodoContext } from "../contexts/TodoContext";
+import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
+import { useDispatch, useSelector } from "react-redux";
+import { updateBook } from "../feature/bookSlice";
 
 export default function AddTodo() {
-    const setTodos = useContext(TodoContext).setTodos;
-    const todos = useContext(TodoContext).todos;
+    const books = useSelector((state) => state.book); // Get the books from Redux
+    const dispatch = useDispatch();
     const navigate = useNavigate();
-    const id = parseInt(useParams().id);
-    const currentTodo = todos.filter((todo) => todo.id === id)[0];
-    const [title, setTitle] = useState(currentTodo.title);
-    const [genre, setGenre] = useState(currentTodo.genre);
-    const [pages, setPages] = useState(currentTodo.pages);
-    const [chapter, setChapter] = useState(currentTodo.chapter);
-    const [completed, setCompleted] = useState(currentTodo.completed);
+    const { id } = useParams(); // Access the ID from the URL
+    const bookId = parseInt(id);
+
+    // State variables for form input
+    const [title, setTitle] = useState('');
+    const [genre, setGenre] = useState('');
+    const [pages, setPages] = useState('');
+    const [chapter, setChapter] = useState('');
+    const [completed, setCompleted] = useState(false);
+
+    // Find the current book by ID
+    const currentBook = books ? books.find((book) => book.id === bookId) : null;
+
+    useEffect(() => {
+        // Check if currentBook exists and initialize form fields with its data
+        if (currentBook) {
+            setTitle(currentBook.title);
+            setGenre(currentBook.genre);
+            setPages(currentBook.pages);
+            setChapter(currentBook.chapter);
+            setCompleted(currentBook.completed);
+        }
+    }, [currentBook]); // Only run this effect when currentBook changes
+
+    // Guard clause for if the currentBook is not found or books is empty
+    if (!currentBook) {
+        return <h1>Book not found.</h1>; // Or redirect elsewhere
+    }
 
     function updateTodo(event) {
         event.preventDefault();
-        const updatedTodos = todos.map((todo) => {
-            if (todo.id === id) {
-                return { id, title, genre, chapter, pages, completed }
-            }
-            return todo;
-        });
-        setTodos(updatedTodos);
-        navigate("/dashboard")
+
+        // Create an updated book object
+        const updatedBook = {
+            id: bookId,
+            title,
+            genre,
+            chapter,
+            pages,
+            completed,
+        };
+
+        // Dispatch the updateBook action to update the book in Redux state
+        dispatch(updateBook(updatedBook));
+
+        // Redirect to the dashboard after the update
+        navigate("/dashboard");
     }
 
+    function navigatoToDashboard() {
+        navigate("/dashboard")
+    }
     return (
         <Container>
-            <Card className="mx-5 my-5">
-                <Card.Body>
-                    <h1 className="my-3">Update Todo</h1>
+            <Card className="my-5">
+                <Card.Body className="mx-5 my-5">
+                    <h1 className="mb-5">Update Books</h1>
                     <Form onSubmit={updateTodo}>
                         <Row className="mb-2">
                             <Form.Group as={Col} className="mb-3" controlId="title">
@@ -66,7 +98,6 @@ export default function AddTodo() {
                                     onChange={(e) => setChapter(e.target.value)}
                                     type="text"
                                     placeholder="Chapter 4"
-
                                 />
                             </Form.Group>
                             <Form.Group as={Col} className="mb-3" controlId="pages">
@@ -76,7 +107,6 @@ export default function AddTodo() {
                                     onChange={(e) => setPages(e.target.value)}
                                     type="text"
                                     placeholder="page 120"
-
                                 />
                             </Form.Group>
                         </Row>
@@ -89,10 +119,12 @@ export default function AddTodo() {
                             onChange={(e) => setCompleted(e.target.checked)}
                             className="mb-3"
                         />
-                        <Button variant="outline-dark" type="submit">
-                            Submit
+                        <Button variant="dark" className="my-2" onClick={navigatoToDashboard}>
+                            Back
                         </Button>
-
+                        <Button variant="warning" type="submit" className="mx-2">
+                            Update
+                        </Button>
                     </Form>
                 </Card.Body>
             </Card>

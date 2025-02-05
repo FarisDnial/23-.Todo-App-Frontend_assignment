@@ -1,102 +1,75 @@
 import { useContext } from "react";
 import { Button, Card, Col, Container, Row, Tab, Tabs } from "react-bootstrap";
-import { TodoContext } from '../contexts/TodoContext';
-import TodoCard from '../components/TodoCard';
+import TodoCard from "../components/TodoCard";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/AuthContext";
+import { useSelector } from "react-redux";
 
 export default function Dashboard() {
-    const { todos } = useContext(TodoContext); // Access `todos` directly
-    const { token } = useContext(AuthContext); // Access `token` directly
+    const books = useSelector((state) => state.book); // Corrected state selection
+    const { token } = useContext(AuthContext);
     const navigate = useNavigate();
 
     function navigateToAdd() {
         if (!token) {
-            console.warn("No token found!");
+            console.warn("No token found! Access Denied.");
             return;
         }
-        console.log(token);
         navigate("/add");
     }
 
     return (
-        <Container>
+        <Container style={{ width: '100rem' }}>
             <Card className="my-5">
                 <Card.Body>
                     <h1 className="mt-5 mb-3 mx-4">To Read List</h1>
                     <h6 className="mx-4">
-                        Let's add the book to your reading list and keep track of your progress. Just let me know which chapter and page you're on, and feel free to use the timer to help manage your reading time!
+                        Let's add the book to your reading list and keep track of your progress.
+                        Just let me know which chapter and page you're on, and feel free to use the timer to help manage your reading time!
                     </h6>
-                    <Button className="my-4 mx-4" variant="outline-dark" onClick={navigateToAdd}>
+                    <Button className="my-4 mx-4" variant="warning" onClick={navigateToAdd}>
                         Add Book
                     </Button>
-                    <GenreTabs todos={todos} />
+                    <GenreTabs books={books} />
                 </Card.Body>
             </Card>
         </Container>
     );
 }
 
-function FictionIncomplete({ todos }) {
-    const fictionalBooks = todos.filter(todo => todo.genre === "fictional" && !todo.completed);
+function GenreTabs({ books }) {
+    const fictionIncomplete = books.filter(book => book.genre === "fictional" && !book.completed);
+    const fictionCompleted = books.filter(book => book.genre === "fictional" && book.completed);
+    const nonFictionIncomplete = books.filter(book => book.genre === "non-fictional" && !book.completed);
+    const nonFictionCompleted = books.filter(book => book.genre === "non-fictional" && book.completed);
 
-    return fictionalBooks.map((todo) => (
-        <Col md={4} key={todo.id}>
-            <TodoCard todo={todo} />
-        </Col>
-    ));
-}
-
-function FictionCompleted({ todos }) {
-    const fictionalBooks = todos.filter(todo => todo.genre === "fictional" && todo.completed);
-
-    return fictionalBooks.map((todo) => (
-        <Col md={4} key={todo.id}>
-            <TodoCard todo={todo} />
-        </Col>
-    ));
-}
-
-function NonFictionIncomplete({ todos }) {
-    const nonFictionalBooks = todos.filter(todo => todo.genre === "non-fictional" && !todo.completed);
-
-    return nonFictionalBooks.map((todo) => (
-        <Col md={4} key={todo.id}>
-            <TodoCard todo={todo} />
-        </Col>
-    ));
-}
-
-function NonFictionComplete({ todos }) {
-    const nonFictionalBooks = todos.filter(todo => todo.genre === "non-fictional" && todo.completed);
-
-    return nonFictionalBooks.map((todo) => (
-        <Col md={4} key={todo.id}>
-            <TodoCard todo={todo} />
-        </Col>
-    ));
-}
-
-function GenreTabs({ todos }) {
     return (
         <Tabs defaultActiveKey="fictional" id="uncontrolled-tab-example" className="mb-4 mx-4">
             <Tab eventKey="fictional" title="Fictional">
                 <Row className="mx-3">
-                    <FictionIncomplete todos={todos} />
+                    {/* <h5><Badge style={{ color: "white", outline: "black" }} bg="success" >Completed = 3</Badge></h5> */}
+                    {fictionIncomplete.map(book => <BookCard key={book.id} book={book} />)}
                 </Row>
                 <Row className="mx-3">
-                    <FictionCompleted todos={todos} />
+                    {fictionCompleted.map(book => <BookCard key={book.id} book={book} />)}
                 </Row>
             </Tab>
-
             <Tab eventKey="non-fictional" title="Non-Fictional">
                 <Row className="mx-3">
-                    <NonFictionIncomplete todos={todos} />
+                    {nonFictionIncomplete.map(book => <BookCard key={book.id} book={book} />)}
                 </Row>
                 <Row className="mx-3">
-                    <NonFictionComplete todos={todos} />
+                    {nonFictionCompleted.map(book => <BookCard key={book.id} book={book} />)}
                 </Row>
             </Tab>
         </Tabs>
+    );
+}
+
+function BookCard({ book }) {
+    return (
+        <Col lg={6}>
+            <TodoCard key={book.id} book={book} />
+        </Col>
     );
 }
